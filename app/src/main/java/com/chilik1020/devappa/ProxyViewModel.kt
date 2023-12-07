@@ -1,23 +1,26 @@
 package com.chilik1020.devappa
 
+import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import com.chilik1020.devappa.model.DISABLED_PROXY
-import com.chilik1020.devappa.model.ProxyPoint
-import com.chilik1020.devappa.repository.ProxyRepository
+import androidx.lifecycle.viewModelScope
+import com.chilik1020.devappa.model.proxyAddress
+import com.chilik1020.devappa.data.ProtoProxyRepository
+import com.chilik1020.devappa.model.DISABLED_PROTO_PROXY
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
-class ProxyViewModel(private val proxyRepository: ProxyRepository) : ViewModel() {
+class ProxyViewModel(
+    private val protoProxyRepository: ProtoProxyRepository
+) : ViewModel() {
 
-    private val proxiesMutableState: MutableState<List<ProxyPoint>> = mutableStateOf(emptyList())
-    val proxiesState: State<List<ProxyPoint>> = proxiesMutableState
+    private val proxiesMutableState: MutableState<Proxies> =
+        mutableStateOf(Proxies.getDefaultInstance())
+    val proxiesState: State<Proxies> = proxiesMutableState
 
-//    private val currentProxyMutable: MutableState<ProxyPoint> = mutableStateOf(DISABLED_PROXY)
-//    val currentProxy: State<ProxyPoint> = currentProxyMutable
-
-    private val currentProxyMutable: MutableState<String> =
-        mutableStateOf(DISABLED_PROXY.proxyAddress())
+    private val currentProxyMutable: MutableState<String> = mutableStateOf(DISABLED_PROTO_PROXY.proxyAddress())
     val currentProxy: State<String> = currentProxyMutable
 
     init {
@@ -33,16 +36,45 @@ class ProxyViewModel(private val proxyRepository: ProxyRepository) : ViewModel()
     }
 
     internal fun addPoint(name: String, ip: String, port: Int) {
-        proxyRepository.add(ProxyPoint(nextId(), name, ip, port))
-        loadProxies()
+        viewModelScope.launch {
+            val nextId = nextId()
+            protoProxyRepository.add(
+                ProxyPoint.newBuilder()
+                    .setId(nextId)
+                    .setName(name)
+                    .setIp(ip)
+                    .setPort(port)
+                    .build()
+            )
+
+            loadProxies()
+        }
+    }
+
+    internal fun remove(point: ProxyPoint) {
+        viewModelScope.launch {
+            protoProxyRepository.remove(point)
+            loadProxies()
+        }
+    }
+
+    internal fun edit(point: ProxyPoint) {
+        viewModelScope.launch {
+            protoProxyRepository.edit(point)
+            loadProxies()
+        }
     }
 
     private fun loadProxies() {
-        proxiesMutableState.value = proxyRepository.getAvailableProxies()
+        viewModelScope.launch {
+            protoProxyRepository.getAvailableProxies().collectLatest {
+                proxiesMutableState.value = it
+                Log.d("___)", "Proto Proxies ${it.pointsList}")
+            }
+        }
     }
 
-
     private fun nextId(): Int {
-        return proxiesState.value.maxByOrNull { it.id }?.let { it.id + 1 } ?: 0
+        return proxiesState.value.pointsList.maxByOrNull { it.id }?.let { it.id + 1 } ?: 0
     }
 }

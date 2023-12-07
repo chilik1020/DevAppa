@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+option java_package = "com.chilik1020.devappa";
+option java_multiple_files = true;
+
+message ProxyPoint {
+  int32 id = 1;
+  string name = 2;
+  string ip = 3;
+  int32 port = 4;
+}
+
+message Proxies {
+
+  repeated ProxyPoint points = 1;
+}

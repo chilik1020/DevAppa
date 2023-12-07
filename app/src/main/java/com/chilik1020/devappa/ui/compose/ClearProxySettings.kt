@@ -14,7 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.chilik1020.devappa.ProxyViewModel
-import com.chilik1020.devappa.model.DISABLED_PROXY
+import com.chilik1020.devappa.model.DISABLED_PROTO_PROXY
 import com.chilik1020.devappa.model.setProxy
 import org.koin.androidx.compose.getViewModel
 
@@ -36,8 +36,8 @@ fun ClearProxySettings(modifier: Modifier = Modifier) {
             onClick = {
                 try {
                     errorInfoVisibility.value = false
-                    DISABLED_PROXY.setProxy(context)
-                    proxyViewModel.setCurrent(DISABLED_PROXY)
+                    DISABLED_PROTO_PROXY.setProxy(context)
+                    proxyViewModel.setCurrent(DISABLED_PROTO_PROXY)
                 } catch (ex: SecurityException) {
                     errorInfoVisibility.value = true
                 }
@@ -46,7 +46,7 @@ fun ClearProxySettings(modifier: Modifier = Modifier) {
             Text(text = "Отключить прокси")
         }
         AnimatedVisibility(visible = errorInfoVisibility.value) {
-            Text(text = "Выполните в терминале команду: \n  adb shell pm grant com.chilik1020.devappa android.permission.WRITE_SECURE_SETTINGS")
+            Text(text = "Выполните в терминале команду: \n adb shell pm grant com.chilik1020.devappa android.permission.WRITE_SECURE_SETTINGS")
         }
     }
 

@@ -28,8 +28,8 @@ class MainActivity : ComponentActivity() {
                 ) {
                     Column(Modifier.padding(16.dp)) {
                         CurrentProxySettings()
-                        ProxyPoints()
                         AddProxyPoint()
+                        ProxyPoints()
                         ClearProxySettings()
                     }
                 }

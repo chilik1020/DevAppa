@@ -50,9 +50,7 @@ fun ProxyPoints(modifier: Modifier = Modifier) {
                         try {
                             it.setProxy(context)
                             proxyViewModel.setCurrent(it)
-                        } catch (ex: SecurityException) {
-
-                        }
+                        } catch (ex: SecurityException) { }
                     },
                     onRemove = {
                         proxyViewModel.remove(it)
@@ -128,7 +126,10 @@ private fun MoreDialog(state: MutableState<Boolean>, point: ProxyPoint, onRemove
                             Text("Закрыть")
                         }
 
-                        TextButton(onClick = { onRemove.invoke(point) }) {
+                        TextButton(onClick = {
+                            state.value = false
+                            onRemove.invoke(point)
+                        }) {
                             Text("Удалить")
                         }
                     }
